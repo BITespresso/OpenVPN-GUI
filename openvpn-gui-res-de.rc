@@ -23,53 +23,58 @@
 #pragma code_page(1252)
 
 /* About Dialog */
-ID_DLG_ABOUT DIALOG 0, 0, 260, 145
-STYLE WS_POPUP | WS_CAPTION | WS_SYSMENU | DS_CENTER
-CAPTION "Über OpenVPN - Eine GUI für Windows"
-FONT 8, "Microsoft Sans Serif"
+ID_DLG_ABOUT DIALOGEX 0, 0, 284, 173
+STYLE WS_POPUP | WS_CAPTION | DS_CENTER | DS_SHELLFONT
+CAPTION "Info über OpenVPN GUI"
+FONT 8, "MS Shell Dlg"
 LANGUAGE LANG_GERMAN, SUBLANG_NEUTRAL
 BEGIN
-    PUSHBUTTON "Ok", IDOK, 99, 125, 63, 14
-    ICON ID_ICO_CONNECTED, 204, 11, 8, 21, 20
-    LTEXT "OpenVPN GUI v" PACKAGE_VERSION " - Eine grafische Oberfläche für OpenVPN", 101, 40, 5, 215, 8
-    LTEXT "Copyright (C) 2004-2005 Mathias Sundman <info@openvpn.se>", 102, 40, 15, 215, 8
-    LTEXT "http://openvpn.se/", 103, 40, 25, 215, 8
-    LTEXT "OpenVPN - Eine Applikation zum sicheren tunneln eines IP " \
+    PUSHBUTTON "OK", IDOK, 227, 152, 50, 14
+    ICON ID_ICO_APP, 204, 7, 7, 30, 30
+    LTEXT "OpenVPN GUI v" PACKAGE_VERSION " - Eine Windows GUI für OpenVPN", 101, 50, 7, 227, 30, SS_CENTERIMAGE
+    LTEXT "Copyright © 2004-2005 Mathias Sundman <info@openvpn.se>", 102, 7, 42, 270, 8
+    LTEXT "http://openvpn.se/", 103, 7, 52, 270, 8
+    CONTROL "", 200, "STATIC", WS_CHILD | WS_VISIBLE | SS_ETCHEDHORZ, 7, 67, 270, 2
+	LTEXT "OpenVPN - Eine Applikation zum sicheren Tunneln eines IP " \
           "Netzwerks über einen einzelnen UDP Port, mit Unterstützung " \
-          "von SSL/TLS-basierten  Session-Authentisierung und Schlüssel- " \
-          "austausch, Paket-Verschlüsselung, Paket-Authentisierung, und " \
-          "Paket-Kompression.",
-          104, 11, 51, 235, 44
-    LTEXT "Copyright (C) 2002-2005 OpenVPN Solutions LLC <info@openvpn.net>", 105, 11, 97, 235, 11
-    LTEXT "http://openvpn.net/", 106, 11, 108, 235, 10
+          "von SSL/TLS-basierter Session-Authentifizierung und Schlüsselaustausch, " \
+          "Paket-Verschlüsselung, Paket-Authentifizierung und Paket-Kompression.", \
+          104, 7, 77, 270, 45
+    LTEXT "Copyright © 2002-2011 OpenVPN Technologies, Inc. <info@openvpn.net>", 105, 7, 127, 270, 8
+    LTEXT "http://openvpn.net/", 106, 7, 137, 270, 8
 END
 
+/* OpenVPN is a full-featured open source SSL VPN solution that accommodates a wide range of configurations, including remote access, site-to-site VPNs, Wi-Fi security, and enterprise-scale remote access solutions with load balancing, failover, and fine-grained access-controls.
+*/
+
 /* Passphrase Dialog */
-ID_DLG_PASSPHRASE DIALOGEX 6, 18, 120, 51
-STYLE WS_POPUP | WS_VISIBLE | WS_CAPTION | DS_CENTER | DS_SETFOREGROUND
+ID_DLG_PASSPHRASE DIALOGEX 0, 0, 284, 83
+STYLE WS_POPUP | WS_VISIBLE | WS_CAPTION | DS_CENTER | DS_SETFOREGROUND | DS_SHELLFONT
 EXSTYLE WS_EX_TOPMOST
-CAPTION "OpenVPN"
-FONT 8, "Microsoft Sans Serif"
+CAPTION "OpenVPN - Passphase erforderlich"
+FONT 8, "MS Shell Dlg"
 LANGUAGE LANG_GERMAN, SUBLANG_NEUTRAL
 BEGIN
-    LTEXT "Passwort:", 201, 6, 6, 100, 10
-    EDITTEXT ID_EDT_PASSPHRASE, 6, 17, 107, 12, ES_PASSWORD | ES_AUTOHSCROLL
-    PUSHBUTTON "Ok", IDOK, 6, 33, 50, 14
-    PUSHBUTTON "Abbrechen", IDCANCEL, 64, 33, 50, 14
+    LTEXT "Geben Sie die Passphrase für ihren privaten Schlüssel ein.", 200, 7, 7, 260, 8
+    RTEXT "&Passprase:", 201, 7, 27, 55, 12, SS_CENTERIMAGE
+    EDITTEXT ID_EDT_PASSPHRASE, 67, 27, 205, 12, ES_PASSWORD | ES_AUTOHSCROLL
+    CONTROL "", 202, "STATIC", WS_CHILD | WS_VISIBLE | SS_ETCHEDHORZ, 0, 54, 278, 2
+    PUSHBUTTON "OK", IDOK, 167, 62, 50, 14
+    PUSHBUTTON "Abbrechen", IDCANCEL, 222, 62, 50, 14
 END
 
 /* Auth Username/Password Dialog */
 ID_DLG_AUTH DIALOG 6, 18, 160, 62
 STYLE WS_POPUP | WS_VISIBLE | WS_CAPTION | DS_CENTER | DS_SETFOREGROUND
 CAPTION "OpenVPN - Benutzer Authentifizierung"
-FONT 8, "Microsoft Sans Serif"
+FONT 8, "MS Shell Dlg"
 LANGUAGE LANG_GERMAN, SUBLANG_NEUTRAL
 BEGIN
-    LTEXT "Benutzer:", 0, 6, 9, 50, 10
+    LTEXT "Benutzername:", 0, 6, 9, 50, 10
     LTEXT "Passwort:", 0, 6, 26, 50, 10
     EDITTEXT ID_EDT_AUTH_USER, 60, 6, 94, 12, ES_AUTOHSCROLL
     EDITTEXT ID_EDT_AUTH_PASS, 60, 23, 94, 12, ES_PASSWORD | ES_AUTOHSCROLL
-    PUSHBUTTON "Ok", IDOK, 20, 42, 50, 14
+    PUSHBUTTON "OK", IDOK, 20, 42, 50, 14
     PUSHBUTTON "Abbrechen", IDCANCEL, 90, 42, 52, 14
 END
 
