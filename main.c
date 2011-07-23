@@ -100,13 +100,13 @@ int WINAPI WinMain (HINSTANCE hThisInstance,
 
   /* Initialize handlers for manangement interface notifications */
   mgmt_rtmsg_handler handler[] = {
-      { ready,    OnReady },
-      { hold,     OnHold },
-      { log,      OnLogLine },
-      { state,    OnStateChange },
-      { password, OnPassword },
-      { stop,     OnStop },
-      { 0,        NULL }
+      { ready,               OnReady },
+      { hold,                OnHold },
+      { log,                 OnLogLine },
+      { state,               OnStateChange },
+      { password,            OnPassword },
+      { stop,                OnStop },
+      { mgmt_rtmsg_type_max, NULL }
   };
   InitManagement(handler);
 
@@ -121,7 +121,7 @@ int WINAPI WinMain (HINSTANCE hThisInstance,
       ShowLocalizedMsg(IDS_ERR_OPEN_DEBUG_FILE, DEBUG_FILE);
       exit(1);
     }
-  PrintDebug("Starting OpenVPN GUI v%s", PACKAGE_VERSION);
+  PrintDebug(_T("Starting OpenVPN GUI v%s"), PACKAGE_VERSION);
 #endif
 
 
@@ -147,7 +147,7 @@ int WINAPI WinMain (HINSTANCE hThisInstance,
       exit(1);
     }
 #ifdef DEBUG
-  PrintDebug("Shell32.dll version: 0x%lx", shell32_version);
+  PrintDebug(_T("Shell32.dll version: 0x%lx"), shell32_version);
 #endif
 
 
@@ -281,10 +281,12 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
       s_uTaskbarRestart = RegisterWindowMessage(TEXT("TaskbarCreated"));
 
       /* Load application icon */
-      HICON hIcon = LoadLocalizedIcon(ID_ICO_APP);
-      if (hIcon) {
-        SendMessage(hwnd, WM_SETICON, (WPARAM) (ICON_SMALL), (LPARAM) (hIcon));
-        SendMessage(hwnd, WM_SETICON, (WPARAM) (ICON_BIG), (LPARAM) (hIcon));
+      {
+          HICON hIcon = LoadLocalizedIcon(ID_ICO_APP);
+          if (hIcon) {
+            SendMessage(hwnd, WM_SETICON, (WPARAM) (ICON_SMALL), (LPARAM) (hIcon));
+            SendMessage(hwnd, WM_SETICON, (WPARAM) (ICON_BIG), (LPARAM) (hIcon));
+          }
       }
 
       CreatePopupMenus();	/* Create popup menus */  
@@ -511,7 +513,7 @@ void CloseApplication(HWND hwnd)
 }
 
 #ifdef DEBUG
-void PrintDebugMsg(char *msg)
+void PrintDebugMsg(TCHAR *msg)
 {
   time_t log_time;
   struct tm *time_struct;
@@ -519,7 +521,7 @@ void PrintDebugMsg(char *msg)
 
   log_time = time(NULL);
   time_struct = localtime(&log_time);
-  snprintf(date, sizeof(date), "%d-%.2d-%.2d %.2d:%.2d:%.2d",
+  _snprintf(date, sizeof(date), "%d-%.2d-%.2d %.2d:%.2d:%.2d",
                  time_struct->tm_year + 1900,
                  time_struct->tm_mon + 1,
                  time_struct->tm_mday,
@@ -531,7 +533,7 @@ void PrintDebugMsg(char *msg)
   fflush(o.debug_fp);
 }
 
-void PrintErrorDebug(char *msg)
+void PrintErrorDebug(TCHAR *msg)
 {
   LPVOID lpMsgBuf;
   char *buf;
@@ -549,7 +551,7 @@ void PrintErrorDebug(char *msg)
           NULL ))
     {
       /* FormatMessage failed! */
-      PrintDebug("FormatMessage() failed. %s ", msg);
+      PrintDebug(_T("FormatMessage() failed. %s "), msg);
       return;
     }
 
@@ -557,7 +559,7 @@ void PrintErrorDebug(char *msg)
   buf = (char *)lpMsgBuf;
   buf[strlen(buf) - 3] = '\0';
 
-  PrintDebug("%s %s", msg, (LPCTSTR)lpMsgBuf);
+  PrintDebug(_T("%s %s"), msg, (LPCTSTR)lpMsgBuf);
 
 }
 #endif

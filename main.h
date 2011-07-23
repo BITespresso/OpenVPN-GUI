@@ -50,9 +50,14 @@
 #define true 1
 #define false 0
 
+#ifdef __GNUC__
 /* GCC function attributes */
 #define UNUSED __attribute__ ((unused))
 #define NORETURN __attribute__ ((noreturn))
+#else
+#define UNUSED
+#define NORETURN
+#endif
 
 #define PACKVERSION(major,minor) MAKELONG(minor,major)
 struct security_attributes

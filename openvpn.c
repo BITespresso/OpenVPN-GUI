@@ -82,10 +82,7 @@ OnLogLine(connection_t *c, char *line)
     char *flags, *message;
     time_t timestamp;
     TCHAR *datetime;
-    const SETTEXTEX ste = {
-        .flags = ST_SELECTION,
-        .codepage = CP_ACP
-    };
+    const SETTEXTEX ste = {ST_SELECTION, CP_ACP};
 
     flags = strchr(line, ',') + 1;
     if (flags - 1 == NULL)
@@ -449,39 +446,46 @@ StatusDialogFunc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
         /* Set connection for this dialog */
         SetProp(hwndDlg, cfgProp, (HANDLE) c);
 
-        /* Create log window */
-        HWND hLogWnd = CreateWindowEx(0, RICHEDIT_CLASS, NULL,
-            WS_CHILD|WS_VISIBLE|WS_HSCROLL|WS_VSCROLL|ES_SUNKEN|ES_LEFT|
-            ES_MULTILINE|ES_READONLY|ES_AUTOHSCROLL|ES_AUTOVSCROLL,
-            20, 25, 350, 160, hwndDlg, (HMENU) ID_EDT_LOG, o.hInstance, NULL);
-        if (!hLogWnd)
         {
-            ShowLocalizedMsg(IDS_ERR_CREATE_EDIT_LOGWINDOW);
-            return FALSE;
+            /* Create log window */
+            HWND hLogWnd = CreateWindowEx(0, RICHEDIT_CLASS, NULL,
+                WS_CHILD|WS_VISIBLE|WS_HSCROLL|WS_VSCROLL|ES_SUNKEN|ES_LEFT|
+                ES_MULTILINE|ES_READONLY|ES_AUTOHSCROLL|ES_AUTOVSCROLL,
+                20, 25, 350, 160, hwndDlg, (HMENU) ID_EDT_LOG, o.hInstance, NULL);
+            if (!hLogWnd)
+            {
+                ShowLocalizedMsg(IDS_ERR_CREATE_EDIT_LOGWINDOW);
+                return FALSE;
+            }
+
+            /* Set font and fontsize of the log window */
+            CHARFORMAT cfm;
+
+            cfm.cbSize = sizeof(CHARFORMAT);
+            cfm.dwMask = CFM_SIZE|CFM_FACE|CFM_BOLD;
+            cfm.dwEffects = 0;
+            cfm.yHeight = 100;
+            cfm.yOffset = 0;
+            cfm.crTextColor = 0;
+            cfm.bCharSet = 0;
+            cfm.bPitchAndFamily = 0;
+            _tcscpy(cfm.szFaceName, _T("MS Sans Serif"));
+
+            if (SendMessage(hLogWnd, EM_SETCHARFORMAT, SCF_DEFAULT, (LPARAM) &cfm) == 0)
+                ShowLocalizedMsg(IDS_ERR_SET_SIZE);
+
+            /* Set size and position of controls */
+            RECT rect;
+            GetClientRect(hwndDlg, &rect);
+            MoveWindow(hLogWnd, 20, 25, rect.right - 40, rect.bottom - 70, TRUE);
+            MoveWindow(GetDlgItem(hwndDlg, ID_TXT_STATUS), 20, 5, rect.right - 25, 15, TRUE);
+            MoveWindow(GetDlgItem(hwndDlg, ID_DISCONNECT), 20, rect.bottom - 30, 90, 23, TRUE);
+            MoveWindow(GetDlgItem(hwndDlg, ID_RESTART), 125, rect.bottom - 30, 90, 23, TRUE);
+            MoveWindow(GetDlgItem(hwndDlg, ID_HIDE), rect.right - 110, rect.bottom - 30, 90, 23, TRUE);
+
+            /* Set focus on the LogWindow so it scrolls automatically */
+            SetFocus(hLogWnd);
         }
-
-        /* Set font and fontsize of the log window */
-        CHARFORMAT cfm = {
-            .cbSize = sizeof(CHARFORMAT),
-            .dwMask = CFM_SIZE|CFM_FACE|CFM_BOLD,
-            .szFaceName = _T("MS Sans Serif"),
-            .dwEffects = 0,
-            .yHeight = 100
-        };
-        if (SendMessage(hLogWnd, EM_SETCHARFORMAT, SCF_DEFAULT, (LPARAM) &cfm) == 0)
-            ShowLocalizedMsg(IDS_ERR_SET_SIZE);
-
-        /* Set size and position of controls */
-        RECT rect;
-        GetClientRect(hwndDlg, &rect);
-        MoveWindow(hLogWnd, 20, 25, rect.right - 40, rect.bottom - 70, TRUE);
-        MoveWindow(GetDlgItem(hwndDlg, ID_TXT_STATUS), 20, 5, rect.right - 25, 15, TRUE);
-        MoveWindow(GetDlgItem(hwndDlg, ID_DISCONNECT), 20, rect.bottom - 30, 90, 23, TRUE);
-        MoveWindow(GetDlgItem(hwndDlg, ID_RESTART), 125, rect.bottom - 30, 90, 23, TRUE);
-        MoveWindow(GetDlgItem(hwndDlg, ID_HIDE), rect.right - 110, rect.bottom - 30, 90, 23, TRUE);
-
-        /* Set focus on the LogWindow so it scrolls automatically */
-        SetFocus(hLogWnd);
         return FALSE;
 
     case WM_SIZE:
@@ -553,7 +557,7 @@ StatusDialogFunc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 static DWORD WINAPI
 ThreadOpenVPNStatus(void *p)
 {
-    connection_t *c = p;
+    connection_t *c = (connection_t *) p;
     TCHAR conn_name[200];
     MSG msg;
 
@@ -659,11 +663,12 @@ StartOpenVPN(connection_t *c)
 
     /* Make I/O handles inheritable and accessible by all */
     SECURITY_DESCRIPTOR sd;
-    SECURITY_ATTRIBUTES sa = {
-        .nLength = sizeof(sa),
-        .lpSecurityDescriptor = &sd,
-        .bInheritHandle = TRUE
-    };
+    SECURITY_ATTRIBUTES sa;
+
+    sa.nLength = sizeof(sa);
+    sa.lpSecurityDescriptor = &sd;
+    sa.bInheritHandle = TRUE;
+
     if (!InitializeSecurityDescriptor(&sd, SECURITY_DESCRIPTOR_REVISION))
     {
         ShowLocalizedMsg(IDS_ERR_INIT_SEC_DESC);
@@ -728,9 +733,9 @@ StartOpenVPN(connection_t *c)
 
     /* Construct command line */
     _sntprintf_0(cmdline, _T("openvpn "
-        "--config \"%s\" %s --service %s 0 --log%s \"%s\" "
-        "--management 127.0.0.10 %hd stdin --auth-retry interact "
-        "--management-hold --management-query-passwords --tls-exit"),
+        _T("--config \"%s\" %s --service %s 0 --log%s \"%s\" ")
+        _T("--management 127.0.0.10 %hd stdin --auth-retry interact ")
+        _T("--management-hold --management-query-passwords --tls-exit")),
         c->config_file, proxy_string, exit_event_name,
         (o.append_string[0] == '1' ? _T("-append") : _T("")),
         c->log_path, c->manage.port);
@@ -821,7 +826,7 @@ ReadLineFromStdOut(HANDLE hStdOut, char *line, DWORD size)
             return FALSE;
         }
 
-        char *pos = memchr(line, '\r', read);
+        char *pos = (char *) memchr(line, '\r', read);
         if (pos)
         {
             len = pos - line + 2;
@@ -868,11 +873,12 @@ CheckVersion()
 
     /* Make handles inheritable and accessible by all */
     SECURITY_DESCRIPTOR sd;
-    SECURITY_ATTRIBUTES sa = {
-        .nLength = sizeof(sa),
-        .lpSecurityDescriptor = &sd,
-        .bInheritHandle = TRUE
-    };
+    SECURITY_ATTRIBUTES sa;
+
+    sa.nLength = sizeof(sa);
+    sa.lpSecurityDescriptor = &sd;
+    sa.bInheritHandle = TRUE;
+
     if (!InitializeSecurityDescriptor(&sd, SECURITY_DESCRIPTOR_REVISION))
     {
         ShowLocalizedMsg(IDS_ERR_INIT_SEC_DESC);
@@ -918,7 +924,7 @@ CheckVersion()
     else if (ReadLineFromStdOut(hStdOutRead, line, sizeof(line)))
     {
 #ifdef DEBUG
-        PrintDebug("VersionString: %s", line);
+        PrintDebug(_T("VersionString: %s"), line);
 #endif
         CloseHandle(pi.hThread);
         CloseHandle(pi.hProcess);

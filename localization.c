@@ -203,7 +203,7 @@ LoadLocalizedIcon(const UINT iconId)
     if (resInfo == NULL)
         return NULL;
 
-    int id = LookupIconIdFromDirectory(resInfo, TRUE);
+    int id = LookupIconIdFromDirectory((PBYTE) resInfo, TRUE);
     if (id == 0)
         return NULL;
 
@@ -220,7 +220,7 @@ LoadLocalizedIcon(const UINT iconId)
     if (resSize == 0)
         return NULL;
 
-    return CreateIconFromResource(resInfo, resSize, TRUE, 0x30000);
+    return CreateIconFromResource((PBYTE) resInfo, resSize, TRUE, 0x30000);
 }
 
 
@@ -232,7 +232,7 @@ LocalizedDialogResource(const UINT dialogId)
     if (res == NULL)
         return NULL;
 
-    return LoadResource(o.hInstance, res);
+    return (LPCDLGTEMPLATE) LoadResource(o.hInstance, res);
 }
 
 
@@ -266,7 +266,7 @@ CreateLocalizedDialogParam(const UINT dialogId, DLGPROC dialogFunc, const LPARAM
     if (resInfo == NULL)
         return NULL;
 
-    return CreateDialogIndirectParam(o.hInstance, resInfo, NULL, dialogFunc, param);
+    return CreateDialogIndirectParam(o.hInstance, (CONST DLGTEMPLATE *) resInfo, NULL, dialogFunc, param);
 }
 
 
@@ -318,10 +318,10 @@ BOOL CALLBACK
 LanguageSettingsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     LPPSHNOTIFY psn;
-    langProcData langData = {
-        .languages = GetDlgItem(hwndDlg, ID_CMB_LANGUAGE),
-        .language = GetGUILanguage()
-    };
+    langProcData langData;
+
+    langData.languages = GetDlgItem(hwndDlg, ID_CMB_LANGUAGE);
+    langData.language = GetGUILanguage();
 
     switch(msg) {
 

@@ -52,11 +52,11 @@ BOOL
 OpenManagement(connection_t *c, u_long addr, u_short port)
 {
     WSADATA wsaData;
-    SOCKADDR_IN skaddr = {
-        .sin_family = AF_INET,
-        .sin_addr.s_addr = addr,
-        .sin_port = htons(port)
-    };
+    SOCKADDR_IN skaddr;
+
+    skaddr.sin_family = AF_INET;
+    skaddr.sin_port = htons(port);
+    skaddr.sin_addr.s_addr = addr;
 
     if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
         return FALSE;
@@ -84,7 +84,7 @@ ManagementCommand(connection_t *c, char *command, mgmt_msg_func handler, mgmt_cm
     int res = 0;
     int size = strlen(command) + 1;
 
-    mgmt_cmd_t *cmd = calloc(1, sizeof(*cmd));
+    mgmt_cmd_t *cmd = (mgmt_cmd_t *) calloc(1, sizeof(*cmd));
     if (cmd == NULL)
         return FALSE;
 
@@ -116,7 +116,7 @@ ManagementCommand(connection_t *c, char *command, mgmt_msg_func handler, mgmt_cm
             res = 0;
 
         size -= res;
-        cmd->command = malloc(size);
+        cmd->command = (char *) malloc(size);
         if (cmd->command == NULL)
         {
             free(cmd);
@@ -212,7 +212,7 @@ OnManagement(SOCKET sk, LPARAM lParam)
         if (res < 1)
             return;
 
-        pos = memchr(data, (*c->manage.password ? ':' : '\n'), res);
+        pos = (char *) memchr(data, (*c->manage.password ? ':' : '\n'), res);
         if (!pos)
             return;
 
