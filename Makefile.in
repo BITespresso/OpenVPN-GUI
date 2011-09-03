@@ -7,7 +7,7 @@ WINDRES = @WINDRES@
 
 LDFLAGS = @CRYPTO_LDFLAGS@ @LDFLAGS@
 LIBS = @CRYPTO_LIBS@ @LIBS@
-CFLAGS = @CRYPTO_CPPFLAGS@ @CFLAGS@ @CPPFLAGS@
+CFLAGS = @CRYPTO_CPPFLAGS@ @CFLAGS@ @CPPFLAGS@ -DUNICODE -D_UNICODE
 CFLAGS += -W -Wall -Wno-unused-parameter -pedantic
 
 OBJS = main.o tray.o openvpn.o viewlog.o \
@@ -23,6 +23,7 @@ SOURCES = main.c main.h openvpn.c openvpn.h localization.c localization.h \
 
 EXTRA = connected.ico connecting.ico disconnected.ico reconnecting.ico openvpn-gui.ico \
         acinclude.m4 Makefile.in aclocal.m4 config.h.in configure configure.ac \
+        config.guess config.sub install-sh \
         OpenVPN\ GUI\ ReadMe.txt changes.txt COPYING COPYRIGHT.GPL
 
 all : ${OBJS}

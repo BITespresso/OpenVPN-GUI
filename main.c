@@ -23,7 +23,7 @@
 
 #include <windows.h>
 #include <shlwapi.h>
-#include <Pbt.h>
+#include <pbt.h>
 
 #include "config.h"
 #include "tray.h"
@@ -47,7 +47,7 @@
 
 /*  Declare Windows procedure  */
 LRESULT CALLBACK WindowProcedure (HWND, UINT, WPARAM, LPARAM);
-BOOL CALLBACK AboutDialogFunc (HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK AboutDialogFunc (HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 static void ShowSettingsDialog();
 void CloseApplication(HWND hwnd);
 
@@ -322,7 +322,7 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
       }
 #ifndef DISABLE_CHANGE_PASSWORD
       if ( (LOWORD(wParam) >= IDM_PASSPHRASEMENU) && (LOWORD(wParam) < IDM_PASSPHRASEMENU + MAX_CONFIGS) ) {
-        ShowChangePassphraseDialog(LOWORD(wParam) - IDM_PASSPHRASEMENU);
+        ShowChangePassphraseDialog(&o.conn[LOWORD(wParam) - IDM_PASSPHRASEMENU]);
       }
 #endif
       if (LOWORD(wParam) == IDM_SETTINGS) {
@@ -409,7 +409,7 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
 }
 
 
-BOOL CALLBACK AboutDialogFunc (HWND hwndDlg, UINT msg, WPARAM wParam, UNUSED LPARAM lParam)
+INT_PTR CALLBACK AboutDialogFunc (HWND hwndDlg, UINT msg, WPARAM wParam, UNUSED LPARAM lParam)
 {
   static HBRUSH hbrBkgnd = NULL;
   static HFONT hFontBold = NULL;

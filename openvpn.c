@@ -150,12 +150,8 @@ OnStateChange(connection_t *c, char *data)
         if (pos != NULL)
             *pos = '\0';
 
-#ifdef _UNICODE
         /* Convert the IP address to Unicode */
         MultiByteToWideChar(CP_ACP, 0, local_ip, -1, c->ip, _tsizeof(c->ip));
-#else
-        strncpy(c->ip, local_ip, sizeof(c->ip));
-#endif
 
         /* Show connection tray balloon */
         if ((c->state == connecting   && o.show_balloon[0] != '0')
@@ -200,7 +196,7 @@ OnStateChange(connection_t *c, char *data)
 /*
  * DialogProc for OpenVPN username/password auth dialog windows
  */
-static BOOL CALLBACK
+static INT_PTR CALLBACK
 UserAuthDialogFunc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     connection_t *c;
@@ -225,19 +221,19 @@ UserAuthDialogFunc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
             username_len = GetDlgItemText(hwndDlg, ID_EDT_AUTH_USER, buf, _tsizeof(buf));
             if (username_len == 0)
                 return TRUE;
-            length = WideCharToMultiByte(CP_ACP, WC_NO_BEST_FIT_CHARS, buf, -1, cmd + 17, sizeof(cmd) - 17, "_", NULL);
+            length = WideCharToMultiByte(CP_UTF8, 0, buf, -1, cmd + 17, sizeof(cmd) - 17, NULL, NULL);
             memcpy(cmd + length + 16, "\"\0", 2);
             ManagementCommand(c, cmd, NULL, regular);
 
             memcpy(cmd, "password", 8);
             GetDlgItemText(hwndDlg, ID_EDT_AUTH_PASS, buf, _tsizeof(buf));
-            length = WideCharToMultiByte(CP_ACP, WC_NO_BEST_FIT_CHARS, buf, -1, cmd + 17, sizeof(cmd) - 17, "_", NULL);
+            length = WideCharToMultiByte(CP_UTF8, 0, buf, -1, cmd + 17, sizeof(cmd) - 17, NULL, NULL);
             memcpy(cmd + length + 16, "\"\0", 2);
             ManagementCommand(c, cmd, NULL, regular);
 
             /* Clear buffers */
             memset(buf, 'x', sizeof(buf));
-            buf[sizeof(buf) - 1] = _T('\0');
+            buf[_tsizeof(buf) - 1] = _T('\0');
             SetDlgItemText(hwndDlg, ID_EDT_AUTH_USER, buf);
             SetDlgItemText(hwndDlg, ID_EDT_AUTH_PASS, buf);
 
@@ -267,7 +263,7 @@ UserAuthDialogFunc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 /*
  * DialogProc for OpenVPN private key password dialog windows
  */
-static BOOL CALLBACK
+static INT_PTR CALLBACK
 PrivKeyPassDialogFunc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     connection_t *c;
@@ -288,13 +284,13 @@ PrivKeyPassDialogFunc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
         {
         case IDOK:
             GetDlgItemText(hwndDlg, ID_EDT_PASSPHRASE, buf, _tsizeof(buf));
-            length = WideCharToMultiByte(CP_ACP, WC_NO_BEST_FIT_CHARS, buf, -1, cmd + 24, sizeof(cmd) - 24, "_", NULL);
+            length = WideCharToMultiByte(CP_UTF8, 0, buf, -1, cmd + 24, sizeof(cmd) - 24, NULL, NULL);
             memcpy(cmd + length + 23, "\"\0", 2);
             ManagementCommand(c, cmd, NULL, regular);
 
             /* Clear buffer */
             memset(buf, 'x', sizeof(buf));
-            buf[sizeof(buf) - 1] = _T('\0');
+            buf[_tsizeof(buf) - 1] = _T('\0');
             SetDlgItemText(hwndDlg, ID_EDT_PASSPHRASE, buf);
 
             EndDialog(hwndDlg, LOWORD(wParam));
@@ -425,7 +421,7 @@ OnStop(connection_t *c, char *msg)
 /*
  * DialogProc for OpenVPN status dialog windows
  */
-static BOOL CALLBACK
+static INT_PTR CALLBACK
 StatusDialogFunc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     connection_t *c;
