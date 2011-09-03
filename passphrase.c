@@ -653,7 +653,7 @@ ChangePassphraseThread(LPVOID data)
   TCHAR conn_name[100];
   TCHAR keyfilename[MAX_PATH];
   int keyfile_format=0;
-  connection_t *c = data;
+  connection_t *c = (connection_t *) data;
 
   /* Cut of extention from config filename. */
   _tcsncpy(conn_name, c->config_file, _tsizeof(conn_name));
