@@ -48,12 +48,13 @@ ProxySettingsDialogFunc(HWND hwndDlg, UINT msg, WPARAM wParam, UNUSED LPARAM lPa
     switch (msg)
     {
     case WM_INITDIALOG:
-        hIcon = LoadLocalizedIcon(ID_ICO_APP);
+        hIcon = LoadLocalizedIcon(ID_ICO_APP, GetSystemMetrics(SM_CXICON), GetSystemMetrics(SM_CYICON));
         if (hIcon)
-        {
-            SendMessage(hwndDlg, WM_SETICON, (WPARAM) (ICON_SMALL), (LPARAM) (hIcon));
             SendMessage(hwndDlg, WM_SETICON, (WPARAM) (ICON_BIG), (LPARAM) (hIcon));
-        }
+
+        hIcon = LoadLocalizedIcon(ID_ICO_APP, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON));
+        if (hIcon)
+            SendMessage(hwndDlg, WM_SETICON, (WPARAM) (ICON_SMALL), (LPARAM) (hIcon));
 
         /* Limit Port editbox to 5 chars. */
         SendMessage(GetDlgItem(hwndDlg, ID_EDT_PROXY_PORT), EM_SETLIMITTEXT, 5, 0);

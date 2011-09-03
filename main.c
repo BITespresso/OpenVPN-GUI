@@ -189,8 +189,8 @@ int WINAPI WinMain (HINSTANCE hThisInstance,
   wincl.cbSize = sizeof (WNDCLASSEX);
 
   /* Use default icon and mouse-pointer */
-  wincl.hIcon = LoadLocalizedIcon(ID_ICO_APP);
-  wincl.hIconSm = LoadLocalizedIcon(ID_ICO_APP);
+  wincl.hIcon = LoadLocalizedIcon(ID_ICO_APP, GetSystemMetrics(SM_CXICON), GetSystemMetrics(SM_CYICON));
+  wincl.hIconSm = LoadLocalizedIcon(ID_ICO_APP, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON));
   wincl.hCursor = LoadCursor (NULL, IDC_ARROW);
   wincl.lpszMenuName = NULL;                 /* No menu */
   wincl.cbClsExtra = 0;                      /* No extra bytes after the window class */
@@ -270,6 +270,7 @@ AutoStartConnections()
 LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
   static UINT s_uTaskbarRestart;
+  HICON hIcon;
   int i;
 
   switch (message) {
@@ -281,13 +282,13 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
       s_uTaskbarRestart = RegisterWindowMessage(TEXT("TaskbarCreated"));
 
       /* Load application icon */
-      {
-          HICON hIcon = LoadLocalizedIcon(ID_ICO_APP);
-          if (hIcon) {
-            SendMessage(hwnd, WM_SETICON, (WPARAM) (ICON_SMALL), (LPARAM) (hIcon));
-            SendMessage(hwnd, WM_SETICON, (WPARAM) (ICON_BIG), (LPARAM) (hIcon));
-          }
-      }
+      hIcon = LoadLocalizedIcon(ID_ICO_APP, GetSystemMetrics(SM_CXICON), GetSystemMetrics(SM_CYICON));
+      if (hIcon)
+        SendMessage(hwnd, WM_SETICON, (WPARAM) (ICON_BIG), (LPARAM) (hIcon));
+
+      hIcon = LoadLocalizedIcon(ID_ICO_APP, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON));
+      if (hIcon)
+        SendMessage(hwnd, WM_SETICON, (WPARAM) (ICON_SMALL), (LPARAM) (hIcon));
 
       CreatePopupMenus();	/* Create popup menus */  
       ShowTrayIcon();
@@ -410,16 +411,46 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
 
 BOOL CALLBACK AboutDialogFunc (HWND hwndDlg, UINT msg, WPARAM wParam, UNUSED LPARAM lParam)
 {
+  static HBRUSH hbrBkgnd = NULL;
+  static HFONT hFontBold = NULL;
   HICON hIcon;
+  HWND hwnd;
+  HFONT hFont;
+  LOGFONT logFont;
 
   switch (msg) {
 
     case WM_INITDIALOG:
-      hIcon = LoadLocalizedIcon(ID_ICO_APP);
-      if (hIcon) {
-        SendMessage(hwndDlg, WM_SETICON, (WPARAM) (ICON_SMALL), (LPARAM) (hIcon));
+      hIcon = LoadLocalizedIcon(ID_ICO_APP, GetSystemMetrics(SM_CXICON), GetSystemMetrics(SM_CYICON));
+      if (hIcon)
         SendMessage(hwndDlg, WM_SETICON, (WPARAM) (ICON_BIG), (LPARAM) (hIcon));
-      }
+
+      hIcon = LoadLocalizedIcon(ID_ICO_APP, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON));
+      if (hIcon)
+        SendMessage(hwndDlg, WM_SETICON, (WPARAM) (ICON_SMALL), (LPARAM) (hIcon));
+
+      /* Load 48 x 48 Icon for OpenVPN logo */
+      hIcon = LoadLocalizedIcon(ID_ICO_APP, 48, 48);
+      if (hIcon)
+          SendDlgItemMessage(hwndDlg, ID_ICO_ABOUT_APP, STM_SETICON, (WPARAM)(HICON)hIcon, 0);
+
+      /* Load 256 x 48 Icon for OpenVPN GUI text */
+      hIcon = LoadLocalizedIcon(ID_ICO_LOGO, 256, 48);
+      if (hIcon)
+          SendDlgItemMessage(hwndDlg, ID_ICO_ABOUT_LOGO, STM_SETICON, (WPARAM)(HICON)hIcon, 0);
+
+      /* Create a bold font from text control */
+      hwnd = GetDlgItem(hwndDlg, ID_TXT_OPENVPN_GUI);
+      hFont = (HFONT)SendMessage(hwnd, WM_GETFONT, 0, 0);
+      GetObject(hFont, sizeof logFont, &logFont);
+      logFont.lfWeight = FW_BOLD;
+      hFontBold = CreateFontIndirect(&logFont);
+
+      SendMessage(hwnd, WM_SETFONT, (WPARAM)hFontBold, 0);
+
+      hwnd = GetDlgItem(hwndDlg, ID_TXT_OPENVPN);
+      SendMessage(hwnd, WM_SETFONT, (WPARAM)hFontBold, 0);
+
       break;
 
     case WM_COMMAND:
@@ -433,8 +464,26 @@ BOOL CALLBACK AboutDialogFunc (HWND hwndDlg, UINT msg, WPARAM wParam, UNUSED LPA
 
     case WM_CLOSE:
       EndDialog(hwndDlg, LOWORD(wParam));
+      if (hbrBkgnd)
+        DeleteObject(hbrBkgnd);
+      if (hFontBold)
+        DeleteObject(hFontBold);
       return TRUE;
-     
+
+    case WM_CTLCOLORBTN:
+    case WM_CTLCOLOREDIT:
+    case WM_CTLCOLORLISTBOX:
+    case WM_CTLCOLORSCROLLBAR:
+    case WM_CTLCOLORSTATIC:
+    case WM_CTLCOLORDLG:
+      {
+        if (hbrBkgnd == NULL)
+        {
+          /* White background */
+          hbrBkgnd = CreateSolidBrush(RGB(255, 255, 255));
+        }
+        return (INT_PTR)hbrBkgnd;
+      }
   }
   return FALSE;
 }
@@ -473,7 +522,7 @@ ShowSettingsDialog()
   psh.dwFlags = PSH_USEHICON | PSH_PROPSHEETPAGE | PSH_NOAPPLYNOW | PSH_NOCONTEXTHELP;
   psh.hwndParent = o.hWnd;
   psh.hInstance = o.hInstance;
-  psh.hIcon = LoadLocalizedIcon(ID_ICO_APP);
+  psh.hIcon = LoadLocalizedIcon(ID_ICO_APP, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON));
   psh.pszCaption = LoadLocalizedString(IDS_SETTINGS_CAPTION);
   psh.nPages = page_number;
   psh.nStartPage = 0;

@@ -24,12 +24,17 @@
 
 /* Icons */
 #define ID_ICO_APP                        90
-#define ID_ICO_CONNECTED                  91
-#define ID_ICO_CONNECTING                 92
-#define ID_ICO_DISCONNECTED               93
+#define ID_ICO_LOGO                       91
+#define ID_ICO_CONNECTED                  92
+#define ID_ICO_CONNECTING                 93
+#define ID_ICO_DISCONNECTED               94
 
 /* About Dialog */
 #define ID_DLG_ABOUT                     100
+#define ID_ICO_ABOUT_APP                 101
+#define ID_ICO_ABOUT_LOGO                102
+#define ID_TXT_OPENVPN_GUI               103
+#define ID_TXT_OPENVPN                   104
 
 /* Ask for Passphrase Dialog */
 #define ID_DLG_PASSPHRASE                150

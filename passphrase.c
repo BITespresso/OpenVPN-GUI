@@ -347,11 +347,14 @@ ChangePassphraseDialogFunc(HWND hwndDlg, UINT msg, WPARAM wParam, UNUSED LPARAM 
   switch (msg) {
 
     case WM_INITDIALOG:
-      hIcon = LoadLocalizedIcon(ID_ICO_APP);
-      if (hIcon) {
-        SendMessage(hwndDlg, WM_SETICON, (WPARAM) (ICON_SMALL), (LPARAM) (hIcon));
+      hIcon = LoadLocalizedIcon(ID_ICO_APP, GetSystemMetrics(SM_CXICON), GetSystemMetrics(SM_CYICON));
+      if (hIcon)
         SendMessage(hwndDlg, WM_SETICON, (WPARAM) (ICON_BIG), (LPARAM) (hIcon));
-      }
+
+      hIcon = LoadLocalizedIcon(ID_ICO_APP, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON));
+      if (hIcon)
+        SendMessage(hwndDlg, WM_SETICON, (WPARAM) (ICON_SMALL), (LPARAM) (hIcon));
+
       return FALSE;
 
     case WM_COMMAND:

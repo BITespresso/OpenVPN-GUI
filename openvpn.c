@@ -800,12 +800,15 @@ SuspendOpenVPN(int config)
 void
 SetStatusWinIcon(HWND hwndDlg, int iconId)
 {
-    HICON hIcon = LoadLocalizedIcon(iconId);
-    if (!hIcon)
-        return;
+    HICON hIcon;
 
-    SendMessage(hwndDlg, WM_SETICON, (WPARAM) ICON_SMALL, (LPARAM) hIcon);
-    SendMessage(hwndDlg, WM_SETICON, (WPARAM) ICON_BIG, (LPARAM) hIcon);
+    hIcon = LoadLocalizedIcon(iconId, GetSystemMetrics(SM_CXICON), GetSystemMetrics(SM_CYICON));
+    if (hIcon)
+        SendMessage(hwndDlg, WM_SETICON, (WPARAM) (ICON_BIG), (LPARAM) (hIcon));
+
+    hIcon = LoadLocalizedIcon(iconId, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON));
+    if (hIcon)
+        SendMessage(hwndDlg, WM_SETICON, (WPARAM) (ICON_SMALL), (LPARAM) (hIcon));
 }
 
 

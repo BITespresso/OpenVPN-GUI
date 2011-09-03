@@ -190,7 +190,7 @@ ShowLocalizedMsg(const UINT stringId, ...)
 
 
 HICON
-LoadLocalizedIcon(const UINT iconId)
+LoadLocalizedIcon(const UINT iconId, const int cxDesired, const int cyDesired)
 {
     LANGID langId = GetGUILanguage();
 
@@ -203,7 +203,7 @@ LoadLocalizedIcon(const UINT iconId)
     if (resInfo == NULL)
         return NULL;
 
-    int id = LookupIconIdFromDirectory((PBYTE) resInfo, TRUE);
+    int id = LookupIconIdFromDirectoryEx((PBYTE) resInfo, TRUE, cxDesired, cyDesired, LR_DEFAULTCOLOR);
     if (id == 0)
         return NULL;
 
@@ -220,7 +220,11 @@ LoadLocalizedIcon(const UINT iconId)
     if (resSize == 0)
         return NULL;
 
-    return CreateIconFromResource((PBYTE) resInfo, resSize, TRUE, 0x30000);
+    PBYTE resResource = (PBYTE) LockResource(resInfo);
+    if (resResource == NULL)
+        return NULL;
+
+    return CreateIconFromResourceEx(resResource, resSize, TRUE, 0x30000, cxDesired, cyDesired, LR_DEFAULTCOLOR);
 }
 
 

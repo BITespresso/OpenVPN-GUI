@@ -23,29 +23,23 @@
 #pragma code_page(1252)
 
 /* About Dialog */
-ID_DLG_ABOUT DIALOGEX 0, 0, 284, 173
-STYLE WS_POPUP | WS_CAPTION | DS_CENTER | DS_SHELLFONT
-CAPTION "Info über OpenVPN GUI"
+ID_DLG_ABOUT DIALOGEX 0, 0, 224, 163
+STYLE WS_POPUP | WS_CAPTION | WS_SYSMENU | DS_CENTER | DS_SHELLFONT
+CAPTION "Über OpenVPN GUI"
 FONT 8, "MS Shell Dlg"
 LANGUAGE LANG_GERMAN, SUBLANG_NEUTRAL
 BEGIN
-    PUSHBUTTON "OK", IDOK, 227, 152, 50, 14
-    ICON ID_ICO_APP, 204, 7, 7, 30, 30
-    LTEXT "OpenVPN GUI v" PACKAGE_VERSION " - Eine Windows GUI für OpenVPN", 101, 50, 7, 227, 30, SS_CENTERIMAGE
-    LTEXT "Copyright © 2004-2005 Mathias Sundman <info@openvpn.se>", 102, 7, 42, 270, 8
-    LTEXT "http://openvpn.se/", 103, 7, 52, 270, 8
-    CONTROL "", 200, "STATIC", WS_CHILD | WS_VISIBLE | SS_ETCHEDHORZ, 7, 67, 270, 2
-	LTEXT "OpenVPN - Eine Applikation zum sicheren Tunneln eines IP " \
-          "Netzwerks über einen einzelnen UDP Port, mit Unterstützung " \
-          "von SSL/TLS-basierter Session-Authentifizierung und Schlüsselaustausch, " \
-          "Paket-Verschlüsselung, Paket-Authentifizierung und Paket-Kompression.", \
-          104, 7, 77, 270, 45
-    LTEXT "Copyright © 2002-2011 OpenVPN Technologies, Inc. <info@openvpn.net>", 105, 7, 127, 270, 8
-    LTEXT "http://openvpn.net/", 106, 7, 137, 270, 8
+    PUSHBUTTON "OK", IDOK, 167, 142, 50, 14
+    ICON ID_ICO_APP, ID_ICO_ABOUT_APP, 7, 7, 32, 30
+    ICON ID_ICO_LOGO, ID_ICO_ABOUT_LOGO, 39, 7, 171, 30
+    LTEXT "OpenVPN GUI - Version " PACKAGE_VERSION, ID_TXT_OPENVPN_GUI, 7, 47, 210, 10
+    LTEXT "Copyright © 2004-2011 by Mathias Sundman && Heiko Hund", 5001, 7, 57, 210, 10
+    LTEXT "http://openvpn-gui.sf.net", 5002, 7, 67, 210, 10
+    CONTROL "", 5003, "STATIC", WS_CHILD | WS_VISIBLE | SS_ETCHEDHORZ, 0, 87, 228, 2
+	LTEXT "OpenVPN", ID_TXT_OPENVPN, 7, 102, 210, 10
+    LTEXT "Copyright © 2002-2011 by OpenVPN Technologies, Inc.", 5004, 7, 112, 210, 10
+    LTEXT "http://openvpn.net/", 5005, 7, 122, 210, 10
 END
-
-/* OpenVPN is a full-featured open source SSL VPN solution that accommodates a wide range of configurations, including remote access, site-to-site VPNs, Wi-Fi security, and enterprise-scale remote access solutions with load balancing, failover, and fine-grained access-controls.
-*/
 
 /* Passphrase Dialog */
 ID_DLG_PASSPHRASE DIALOGEX 0, 0, 284, 83

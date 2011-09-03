@@ -28,6 +28,7 @@ CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "openvpn-gui.manifest"
 
 /* Application Icons */
 ID_ICO_APP           ICON  DISCARDABLE  "openvpn-gui.ico"
+ID_ICO_LOGO          ICON  DISCARDABLE  "openvpn-gui-text.ico"
 ID_ICO_CONNECTED     ICON  DISCARDABLE  "connected.ico"
 ID_ICO_CONNECTING    ICON  DISCARDABLE  "connecting.ico"
 ID_ICO_DISCONNECTED  ICON  DISCARDABLE  "disconnected.ico"
