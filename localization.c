@@ -35,6 +35,7 @@
 #include "openvpn-gui-res.h"
 #include "options.h"
 #include "registry.h"
+#include "gui.h"
 
 extern options_t o;
 
@@ -242,7 +243,7 @@ LocalizedDialogBoxParam(const UINT dialogId, DLGPROC dialogFunc, const LPARAM pa
     if (resInfo == NULL)
         return -1;
 
-    return DialogBoxIndirectParam(o.hInstance, resInfo, NULL, dialogFunc, param);
+    return ExtendedDialogBoxIndirectParam(o.hInstance, resInfo, NULL, dialogFunc, param);
 }
 
 
