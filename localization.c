@@ -266,7 +266,7 @@ CreateLocalizedDialogParam(const UINT dialogId, DLGPROC dialogFunc, const LPARAM
     if (resInfo == NULL)
         return NULL;
 
-    return CreateDialogIndirectParam(o.hInstance, (CONST DLGTEMPLATE *) resInfo, NULL, dialogFunc, param);
+    return ExtendedCreateDialogIndirectParam(o.hInstance, (CONST DLGTEMPLATE *) resInfo, NULL, dialogFunc, param);
 }
 
 

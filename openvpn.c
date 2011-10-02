@@ -41,6 +41,7 @@
 #include "proxy.h"
 #include "passphrase.h"
 #include "localization.h"
+#include "gui.h"
 
 #define WM_OVPN_STOP    (WM_APP + 10)
 #define WM_OVPN_SUSPEND (WM_APP + 11)
@@ -205,16 +206,19 @@ UserAuthDialogFunc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
     UINT username_len;
     int length;
 
+    c = (connection_t *) GetProp(hwndDlg, cfgProp);
+
     switch (msg)
     {
     case WM_INITDIALOG:
         /* Set connection for this dialog */
         SetProp(hwndDlg, cfgProp, (HANDLE) lParam);
+
         SetForegroundWindow(hwndDlg);
+        RemoveSysMenu(hwndDlg);
         break;
 
     case WM_COMMAND:
-        c = (connection_t *) GetProp(hwndDlg, cfgProp);
         switch (LOWORD(wParam))
         {
         case IDOK:
@@ -249,6 +253,7 @@ UserAuthDialogFunc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 
     case WM_CLOSE:
         EndDialog(hwndDlg, LOWORD(wParam));
+        StopOpenVPN(c);
         return TRUE;
 
     case WM_NCDESTROY:
@@ -271,15 +276,19 @@ PrivKeyPassDialogFunc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
     char cmd[80] = "password \"Private Key\" \"";
     UINT length;
 
+    c = (connection_t *) GetProp(hwndDlg, cfgProp);
+
     switch (msg)
     {
     case WM_INITDIALOG:
         /* Set connection for this dialog */
         SetProp(hwndDlg, cfgProp, (HANDLE) lParam);
+
         SetForegroundWindow(hwndDlg);
+        RemoveSysMenu(hwndDlg);
+        break;
 
     case WM_COMMAND:
-        c = (connection_t *) GetProp(hwndDlg, cfgProp);
         switch (LOWORD(wParam))
         {
         case IDOK:
@@ -424,6 +433,7 @@ OnStop(connection_t *c, char *msg)
 static INT_PTR CALLBACK
 StatusDialogFunc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
+    static RECT rectDialog, rectTxtStatus, rectDisconnect, rectRestart, rectHide;
     connection_t *c;
 
     switch (msg)
@@ -447,7 +457,7 @@ StatusDialogFunc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
             HWND hLogWnd = CreateWindowEx(0, RICHEDIT_CLASS, NULL,
                 WS_CHILD|WS_VISIBLE|WS_HSCROLL|WS_VSCROLL|ES_SUNKEN|ES_LEFT|
                 ES_MULTILINE|ES_READONLY|ES_AUTOHSCROLL|ES_AUTOVSCROLL,
-                20, 25, 350, 160, hwndDlg, (HMENU) ID_EDT_LOG, o.hInstance, NULL);
+                10, 10, 210, 110, hwndDlg, (HMENU) ID_EDT_LOG, o.hInstance, NULL);
             if (!hLogWnd)
             {
                 ShowLocalizedMsg(IDS_ERR_CREATE_EDIT_LOGWINDOW);
@@ -458,38 +468,100 @@ StatusDialogFunc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
             CHARFORMAT cfm;
 
             cfm.cbSize = sizeof(CHARFORMAT);
-            cfm.dwMask = CFM_SIZE|CFM_FACE|CFM_BOLD;
+            cfm.dwMask = CFM_SIZE | CFM_FACE | CFM_BOLD;
             cfm.dwEffects = 0;
-            cfm.yHeight = 100;
+            cfm.yHeight = 8 * TWIPS_PER_POINT;
             cfm.yOffset = 0;
             cfm.crTextColor = 0;
             cfm.bCharSet = 0;
             cfm.bPitchAndFamily = 0;
-            _tcscpy(cfm.szFaceName, _T("MS Sans Serif"));
+            _tcscpy(cfm.szFaceName, _T("MS Shell Dlg"));
+
+            if (IsWindowsVistaOrLater())
+            {
+                cfm.yHeight = 9 * TWIPS_PER_POINT;
+                _tcscpy(cfm.szFaceName, _T("Segoe UI"));
+            }
 
             if (SendMessage(hLogWnd, EM_SETCHARFORMAT, SCF_DEFAULT, (LPARAM) &cfm) == 0)
                 ShowLocalizedMsg(IDS_ERR_SET_SIZE);
 
-            /* Set size and position of controls */
-            RECT rect;
-            GetClientRect(hwndDlg, &rect);
-            MoveWindow(hLogWnd, 20, 25, rect.right - 40, rect.bottom - 70, TRUE);
-            MoveWindow(GetDlgItem(hwndDlg, ID_TXT_STATUS), 20, 5, rect.right - 25, 15, TRUE);
-            MoveWindow(GetDlgItem(hwndDlg, ID_DISCONNECT), 20, rect.bottom - 30, 90, 23, TRUE);
-            MoveWindow(GetDlgItem(hwndDlg, ID_RESTART), 125, rect.bottom - 30, 90, 23, TRUE);
-            MoveWindow(GetDlgItem(hwndDlg, ID_HIDE), rect.right - 110, rect.bottom - 30, 90, 23, TRUE);
+            /* Get the initial size and position of dialog and controls as reference position */
+            GetClientRect(hwndDlg, &rectDialog);
+            GetControlRect(GetDlgItem(hwndDlg, ID_TXT_STATUS), &rectTxtStatus);
+            GetControlRect(GetDlgItem(hwndDlg, ID_DISCONNECT), &rectDisconnect);
+            GetControlRect(GetDlgItem(hwndDlg, ID_RESTART), &rectRestart);
+            GetControlRect(GetDlgItem(hwndDlg, ID_HIDE), &rectHide);
 
-            /* Set focus on the LogWindow so it scrolls automatically */
+            /* Set size and position of controls relative to dialog size */
+            MoveWindow(hLogWnd,
+                       rectTxtStatus.left,
+                       rectTxtStatus.bottom,
+                       rectDialog.right - rectTxtStatus.left - (rectDialog.right - rectTxtStatus.right),
+                       rectDialog.bottom - rectTxtStatus.bottom - (rectHide.bottom - rectHide.top) - (2 * (rectDialog.bottom - rectHide.bottom)),
+                       TRUE);
+            MoveWindow(GetDlgItem(hwndDlg, ID_TXT_STATUS),
+                       rectTxtStatus.left,
+                       rectTxtStatus.top,
+                       rectDialog.right - rectTxtStatus.left - (rectDialog.right - rectTxtStatus.right),
+                       rectTxtStatus.bottom - rectTxtStatus.top,
+                       TRUE);
+            MoveWindow(GetDlgItem(hwndDlg, ID_DISCONNECT),
+                       rectDisconnect.left,
+                       rectDialog.bottom - (rectDialog.bottom - rectDisconnect.top),
+                       rectDisconnect.right - rectDisconnect.left,
+                       rectDisconnect.bottom - rectDisconnect.top,
+                       TRUE);
+            MoveWindow(GetDlgItem(hwndDlg, ID_RESTART),
+                       rectRestart.left,
+                       rectDialog.bottom - (rectDialog.bottom - rectRestart.top),
+                       rectRestart.right - rectRestart.left,
+                       rectRestart.bottom - rectRestart.top,
+                       TRUE);
+            MoveWindow(GetDlgItem(hwndDlg, ID_HIDE),
+                       rectDialog.right - (rectDialog.right - rectHide.left),
+                       rectDialog.bottom - (rectDialog.bottom - rectHide.top),
+                       rectHide.right - rectHide.left,
+                       rectHide.bottom - rectHide.top,
+                       TRUE);
+
+            /* Set focus on the log window so it scrolls automatically */
             SetFocus(hLogWnd);
         }
         return FALSE;
 
     case WM_SIZE:
-        MoveWindow(GetDlgItem(hwndDlg, ID_EDT_LOG), 20, 25, LOWORD(lParam) - 40, HIWORD(lParam) - 70, TRUE);
-        MoveWindow(GetDlgItem(hwndDlg, ID_DISCONNECT), 20, HIWORD(lParam) - 30, 90, 23, TRUE);
-        MoveWindow(GetDlgItem(hwndDlg, ID_RESTART), 125, HIWORD(lParam) - 30, 90, 23, TRUE);
-        MoveWindow(GetDlgItem(hwndDlg, ID_HIDE), LOWORD(lParam) - 110, HIWORD(lParam) - 30, 90, 23, TRUE);
-        MoveWindow(GetDlgItem(hwndDlg, ID_TXT_STATUS), 20, 5, LOWORD(lParam) - 25, 15, TRUE);
+        /* Set size and position of controls relative to dialog size */
+        MoveWindow(GetDlgItem(hwndDlg, ID_EDT_LOG),
+                    rectTxtStatus.left,
+                    rectTxtStatus.bottom,
+                    LOWORD(lParam) - rectTxtStatus.left - (rectDialog.right - rectTxtStatus.right),
+                    HIWORD(lParam) - rectTxtStatus.bottom - (rectHide.bottom - rectHide.top) - (2 * (rectDialog.bottom - rectHide.bottom)),
+                    TRUE);
+        MoveWindow(GetDlgItem(hwndDlg, ID_TXT_STATUS),
+                    rectTxtStatus.left,
+                    rectTxtStatus.top,
+                    LOWORD(lParam) - rectTxtStatus.left - (rectDialog.right - rectTxtStatus.right),
+                    rectTxtStatus.bottom - rectTxtStatus.top,
+                    TRUE);
+        MoveWindow(GetDlgItem(hwndDlg, ID_DISCONNECT),
+                    rectDisconnect.left,
+                    HIWORD(lParam) - (rectDialog.bottom - rectDisconnect.top),
+                    rectDisconnect.right - rectDisconnect.left,
+                    rectDisconnect.bottom - rectDisconnect.top,
+                    TRUE);
+        MoveWindow(GetDlgItem(hwndDlg, ID_RESTART),
+                    rectRestart.left,
+                    HIWORD(lParam) - (rectDialog.bottom - rectRestart.top),
+                    rectRestart.right - rectRestart.left,
+                    rectRestart.bottom - rectRestart.top,
+                    TRUE);
+        MoveWindow(GetDlgItem(hwndDlg, ID_HIDE),
+                    LOWORD(lParam) - (rectDialog.right - rectHide.left),
+                    HIWORD(lParam) - (rectDialog.bottom - rectHide.top),
+                    rectHide.right - rectHide.left,
+                    rectHide.bottom - rectHide.top,
+                    TRUE);
         InvalidateRect(hwndDlg, NULL, TRUE);
         return TRUE;
 
@@ -533,6 +605,38 @@ StatusDialogFunc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
             ShowWindow(hwndDlg, SW_HIDE);
         else
             DestroyWindow(hwndDlg);
+        return TRUE;
+
+    case WM_GETMINMAXINFO:
+        {
+            RECT rectWindow, rectClient;
+            LONG windowBorderWidth, windowBorderHeight;
+
+            GetWindowRect(hwndDlg, &rectWindow);
+            GetClientRect(hwndDlg, &rectClient);
+
+            windowBorderWidth = (rectWindow.right - rectWindow.left) - rectClient.right;
+            windowBorderHeight = (rectWindow.bottom - rectWindow.top) - rectClient.bottom;
+
+            ((MINMAXINFO *)lParam)->ptMinTrackSize.x =
+                (rectDisconnect.right - rectDisconnect.left) +    // width of "disconnect" button
+                (rectRestart.right - rectRestart.left) +          // width of "restart" button
+                (rectHide.right - rectHide.left) +                // width of "hide" button
+                rectDisconnect.left +                             // left spacing
+                (rectRestart.left - rectDisconnect.right) +       // spacing between buttons
+                (rectRestart.left - rectDisconnect.right) +       // spacing between buttons
+                (rectDialog.right - rectHide.right) +             // right spacing
+                windowBorderWidth;                                // width of window border
+
+            ((MINMAXINFO *)lParam)->ptMinTrackSize.y =
+                (rectTxtStatus.bottom - rectTxtStatus.top) +                                 // height of "status text"
+                GetSystemMetrics(SM_CYHSCROLL) + 2 * GetSystemMetrics(SM_CXVSCROLL) + 4 +    // height of "log window"
+                (rectHide.bottom - rectHide.top) +                                           // height of "hide" button
+                rectTxtStatus.top +                                                          // top spacing
+                (rectDialog.bottom - rectHide.bottom) +                                      // spacing between button and "log window"
+                (rectDialog.bottom - rectHide.bottom) +                                      // bottom spacing
+                windowBorderHeight;                                                          // height of window border
+        }
         return TRUE;
 
     case WM_NCDESTROY:

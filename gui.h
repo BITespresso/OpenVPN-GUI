@@ -22,9 +22,12 @@
 #ifndef GUI_H
 #define GUI_H
 
+#define TWIPS_PER_POINT 20
+
 BOOL IsWindowsVistaOrLater(void);
 BOOL IsDialogEx(LPCDLGTEMPLATE);
 INT_PTR ExtendedDialogBoxIndirectParam(const HINSTANCE, LPCDLGTEMPLATE, const HWND, const DLGPROC, const LPARAM);
+HWND ExtendedCreateDialogIndirectParam(const HINSTANCE, LPCDLGTEMPLATE, const HWND, const DLGPROC, const LPARAM);
 void DeleteModifiedDialogTemplate(LPCDLGTEMPLATE);
 LPCDLGTEMPLATE CreateModifiedDialogTemplate(LPCDLGTEMPLATE);
 DWORD GetSizeOfDialogTemplate(LPCDLGTEMPLATE);
@@ -32,5 +35,7 @@ void SkipElement(LPBYTE *);
 void CopyElement(LPBYTE *, LPBYTE *);
 void ReplaceFontPointSize(LPBYTE *, LPBYTE *);
 void ReplaceFontTypeface(LPBYTE *, LPBYTE *);
+void RemoveSysMenu(HWND);
+BOOL GetControlRect(const HWND, LPRECT);
 
 #endif

@@ -138,6 +138,36 @@ INT_PTR ExtendedDialogBoxIndirectParam(const HINSTANCE hInstance, const LPCDLGTE
     return nResult;
 }
 
+HWND ExtendedCreateDialogIndirectParam(const HINSTANCE hInstance, const LPCDLGTEMPLATE hDialogTemplate, const HWND hWndParent, const DLGPROC lpDialogFunc, const LPARAM dwInitParam)
+{
+    HWND hwndResult;
+    LPCDLGTEMPLATE hNewDialogTemplate;
+
+    // Windows Vista and above use Segoe UI 9 pt as default font while all the static dialog box templates
+    // are using MS Shell Dlg 8 pt font which is fine for Windows 2000 and Windows XP. Therefore dynamically
+    // build a new dialog box template for Windows Vista and later OS versions with Segoe UI 9 pt font.
+    if (IsWindowsVistaOrLater())
+    {
+        if ((hNewDialogTemplate = CreateModifiedDialogTemplate(hDialogTemplate)))
+        {
+            hwndResult = CreateDialogIndirectParam(hInstance, hNewDialogTemplate, hWndParent, lpDialogFunc, dwInitParam);
+            DeleteModifiedDialogTemplate(hNewDialogTemplate);
+        }
+        else
+        {
+            // Something went wrong so use the unmodified template as fallback
+            hwndResult = CreateDialogIndirectParam(hInstance, hDialogTemplate, hWndParent, lpDialogFunc, dwInitParam);
+        }
+    }
+    else
+    {
+        // No need to modify the dialog box template as we are running on Windows 2000 or Windows XP
+        hwndResult = CreateDialogIndirectParam(hInstance, hDialogTemplate, hWndParent, lpDialogFunc, dwInitParam);
+    }
+
+    return hwndResult;
+}
+
 void DeleteModifiedDialogTemplate(LPCDLGTEMPLATE hDialogTemplate)
 {
     HeapFree(GetProcessHeap(), 0, (LPVOID) hDialogTemplate);
@@ -439,4 +469,36 @@ void ReplaceFontTypeface(LPBYTE *ppbDest, LPBYTE *ppbSrc)
     *ppbDest += (lstrlenW(typeface) + 1) * sizeof(WCHAR);
 
     return;
+}
+
+void RemoveSysMenu(HWND hwndDlg)
+{
+    SendMessage(hwndDlg, WM_SETICON, (WPARAM) (ICON_BIG), NULL);
+    SendMessage(hwndDlg, WM_SETICON, (WPARAM) (ICON_SMALL), NULL);
+
+    return;
+}
+
+BOOL GetControlRect(const HWND hWnd, LPRECT lpRect)
+{
+    HWND hWndParent = GetParent(hWnd);
+    POINT p = {0};
+
+    // Get upper left position of the control within the window
+    MapWindowPoints(hWnd, hWndParent, &p, 1);
+
+    // Get size of the control
+    if (GetClientRect(hWnd, lpRect))
+    {
+        // Add upper left offset to the control size for absolute
+        // position within the window
+        (*lpRect).left += p.x;
+        (*lpRect).top += p.y;
+        (*lpRect).right += p.x;
+        (*lpRect).bottom += p.y;
+
+        return TRUE;
+    }
+
+    return FALSE;
 }

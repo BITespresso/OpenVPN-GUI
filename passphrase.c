@@ -37,6 +37,7 @@
 #include "openvpn-gui-res.h"
 #include "chartable.h"
 #include "localization.h"
+#include "gui.h"
 
 extern options_t o;
 
@@ -355,6 +356,7 @@ ChangePassphraseDialogFunc(HWND hwndDlg, UINT msg, WPARAM wParam, UNUSED LPARAM 
       if (hIcon)
         SendMessage(hwndDlg, WM_SETICON, (WPARAM) (ICON_SMALL), (LPARAM) (hIcon));
 
+      RemoveSysMenu(hwndDlg);
       return FALSE;
 
     case WM_COMMAND:
