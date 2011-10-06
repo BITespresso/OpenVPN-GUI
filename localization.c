@@ -76,7 +76,7 @@ GetGUILanguage(void)
     if (status == ERROR_SUCCESS)
         GetRegistryValueNumeric(regkey, _T("ui_language"), &value);
 
-    gui_language = ( value != 0 ? value : LANGIDFROMLCID(GetSystemDefaultLCID()) );
+    gui_language = (LANGID) ( value != 0 ? value : LANGIDFROMLCID(GetSystemDefaultLCID()) );
     InitMUILanguage(gui_language);
     return gui_language;
 }
@@ -303,13 +303,13 @@ FillLangListProc(HANDLE module, PTSTR type, PTSTR stringId, WORD langId, LONG_PT
     langProcData *data = (langProcData*) lParam;
 
     int index = ComboBox_AddString(data->languages, LangListEntry(IDS_LANGUAGE_NAME, langId));
-    ComboBox_SetItemData(data->languages, index, langId);
+    (void) ComboBox_SetItemData(data->languages, index, langId);
 
     /* Select this item if it is the currently displayed language */
     if (langId == data->language
     ||  (PRIMARYLANGID(langId) == PRIMARYLANGID(data->language)
      && ComboBox_GetCurSel(data->languages) == CB_ERR) )
-        ComboBox_SetCurSel(data->languages, index);
+        (void) ComboBox_SetCurSel(data->languages, index);
 
     return TRUE;
 }
@@ -342,11 +342,11 @@ LanguageSettingsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 
         /* If none of the available languages matched, select the fallback */
         if (ComboBox_GetCurSel(langData.languages) == CB_ERR)
-            ComboBox_SelectString(langData.languages, -1,
+            (void) ComboBox_SelectString(langData.languages, -1,
                 LangListEntry(IDS_LANGUAGE_NAME, fallbackLangId));
 
         /* Clear language id data for the selected item */
-        ComboBox_SetItemData(langData.languages, ComboBox_GetCurSel(langData.languages), 0);
+        (void) ComboBox_SetItemData(langData.languages, ComboBox_GetCurSel(langData.languages), 0);
 
         /* Center the propery sheet */
         ClipOrCenterWindowToMonitor(GetParent(hwndDlg), MONITOR_CENTER | MONITOR_WORKAREA);
