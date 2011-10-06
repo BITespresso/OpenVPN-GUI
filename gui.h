@@ -24,6 +24,11 @@
 
 #define TWIPS_PER_POINT 20
 
+#define MONITOR_CENTER   0x0001        // Center rect to monitor
+#define MONITOR_CLIP     0x0000        // Clip rect to monitor
+#define MONITOR_WORKAREA 0x0002        // Use monitor work area
+#define MONITOR_AREA     0x0000        // Use monitor entire area
+
 BOOL IsWindowsVistaOrLater(void);
 BOOL IsDialogEx(LPCDLGTEMPLATE);
 INT_PTR ExtendedDialogBoxIndirectParam(const HINSTANCE, LPCDLGTEMPLATE, const HWND, const DLGPROC, const LPARAM);
@@ -37,5 +42,7 @@ void ReplaceFontPointSize(LPBYTE *, LPBYTE *);
 void ReplaceFontTypeface(LPBYTE *, LPBYTE *);
 void RemoveSysMenu(HWND);
 BOOL GetControlRect(const HWND, LPRECT);
+void ClipOrCenterRectToMonitor(const LPRECT, const UINT);
+void ClipOrCenterWindowToMonitor(const HWND, const UINT);
 
 #endif

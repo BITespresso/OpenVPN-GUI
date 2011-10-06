@@ -326,10 +326,20 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
       }
 #endif
       if (LOWORD(wParam) == IDM_SETTINGS) {
-        ShowSettingsDialog();
+          if (o.hwndSettings != NULL) {
+              SetForegroundWindow(o.hwndSettings);
+          }
+          else {
+              ShowSettingsDialog();
+          }
       }
       if (LOWORD(wParam) == IDM_ABOUT) {
-        LocalizedDialogBox(ID_DLG_ABOUT, AboutDialogFunc);
+          if (o.hwndAbout != NULL) {
+              SetForegroundWindow(o.hwndAbout);
+          }
+          else {
+              LocalizedDialogBox(ID_DLG_ABOUT, AboutDialogFunc);
+          }
       }
       if (LOWORD(wParam) == IDM_CLOSE) {
         CloseApplication(hwnd);
@@ -451,24 +461,17 @@ INT_PTR CALLBACK AboutDialogFunc (HWND hwndDlg, UINT msg, WPARAM wParam, UNUSED 
       hwnd = GetDlgItem(hwndDlg, ID_TXT_OPENVPN);
       SendMessage(hwnd, WM_SETFONT, (WPARAM)hFontBold, 0);
 
+      /* Set the global window handle for the about dialog */
+      o.hwndAbout = hwndDlg;
+
       break;
 
     case WM_COMMAND:
       switch (LOWORD(wParam)) {
-
-        case IDOK:			// button
-          EndDialog(hwndDlg, LOWORD(wParam));
-          return TRUE;
+        case IDOK:
+          goto exit_dialog;
       }
       break;
-
-    case WM_CLOSE:
-      EndDialog(hwndDlg, LOWORD(wParam));
-      if (hbrBkgnd)
-        DeleteObject(hbrBkgnd);
-      if (hFontBold)
-        DeleteObject(hFontBold);
-      return TRUE;
 
     case WM_CTLCOLORBTN:
     case WM_CTLCOLOREDIT:
@@ -484,6 +487,27 @@ INT_PTR CALLBACK AboutDialogFunc (HWND hwndDlg, UINT msg, WPARAM wParam, UNUSED 
         }
         return (INT_PTR)hbrBkgnd;
       }
+
+    case WM_CLOSE:
+
+    exit_dialog:
+      /* Set the global window handle for the about dialog to NULL */
+      o.hwndAbout = NULL;
+
+      if (hbrBkgnd)
+      {
+        DeleteObject(hbrBkgnd);
+        hbrBkgnd = NULL;
+      }
+
+      if (hFontBold)
+      {
+        DeleteObject(hFontBold);
+        hFontBold = NULL;
+      }
+
+      EndDialog(hwndDlg, LOWORD(wParam));
+      return TRUE;
   }
   return FALSE;
 }
@@ -494,6 +518,16 @@ ShowSettingsDialog()
 {
   PROPSHEETPAGE psp[2];
   int page_number = 0;
+
+  /* General tab */
+  psp[page_number].dwSize = sizeof(PROPSHEETPAGE);
+  psp[page_number].dwFlags = PSP_DLGINDIRECT;
+  psp[page_number].hInstance = o.hInstance;
+  psp[page_number].pResource = LocalizedDialogResource(ID_DLG_GENERAL);
+  psp[page_number].pfnDlgProc = LanguageSettingsDlgProc;
+  psp[page_number].lParam = 0;
+  psp[page_number].pfnCallback = NULL;
+  ++page_number;
 
   /* Proxy tab */
   if (o.allow_proxy[0] == '1' && o.service_only[0] == '0') {
@@ -507,22 +541,12 @@ ShowSettingsDialog()
     ++page_number;
   }
 
-  /* General tab */
-  psp[page_number].dwSize = sizeof(PROPSHEETPAGE);
-  psp[page_number].dwFlags = PSP_DLGINDIRECT;
-  psp[page_number].hInstance = o.hInstance;
-  psp[page_number].pResource = LocalizedDialogResource(ID_DLG_GENERAL);
-  psp[page_number].pfnDlgProc = LanguageSettingsDlgProc;
-  psp[page_number].lParam = 0;
-  psp[page_number].pfnCallback = NULL;
-  ++page_number;
-
   PROPSHEETHEADER psh;
   psh.dwSize = sizeof(PROPSHEETHEADER);
   psh.dwFlags = PSH_USEHICON | PSH_PROPSHEETPAGE | PSH_NOAPPLYNOW | PSH_NOCONTEXTHELP;
-  psh.hwndParent = o.hWnd;
+  psh.hwndParent = NULL;
   psh.hInstance = o.hInstance;
-  psh.hIcon = LoadLocalizedIcon(ID_ICO_APP, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON));
+  psh.hIcon = NULL;
   psh.pszCaption = LoadLocalizedString(IDS_SETTINGS_CAPTION);
   psh.nPages = page_number;
   psh.nStartPage = 0;
@@ -530,6 +554,10 @@ ShowSettingsDialog()
   psh.pfnCallback = NULL;
 
   PropertySheet(&psh);
+
+  /* Set the global window handle for the settings dialog to NULL */
+  o.hwndSettings = NULL;
+
 }
 
 

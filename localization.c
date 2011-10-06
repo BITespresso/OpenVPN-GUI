@@ -2,6 +2,7 @@
  *  OpenVPN-GUI -- A Windows GUI for OpenVPN.
  *
  *  Copyright (C) 2009 Heiko Hund <heikoh@users.sf.net>
+ *                2011 Michael Berger <michael.berger@gmx.de>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -317,6 +318,7 @@ FillLangListProc(HANDLE module, PTSTR type, PTSTR stringId, WORD langId, LONG_PT
 INT_PTR CALLBACK
 LanguageSettingsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
+    HICON hIcon;
     LPPSHNOTIFY psn;
     langProcData langData;
 
@@ -326,6 +328,14 @@ LanguageSettingsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
     switch(msg) {
 
     case WM_INITDIALOG:
+        hIcon = LoadLocalizedIcon(ID_ICO_APP, GetSystemMetrics(SM_CXICON), GetSystemMetrics(SM_CYICON));
+        if (hIcon)
+            SendMessage(GetParent(hwndDlg), WM_SETICON, (WPARAM) (ICON_BIG), (LPARAM) (hIcon));
+
+        hIcon = LoadLocalizedIcon(ID_ICO_APP, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON));
+        if (hIcon)
+            SendMessage(GetParent(hwndDlg), WM_SETICON, (WPARAM) (ICON_SMALL), (LPARAM) (hIcon));
+
         /* Populate UI language selection combo box */
         EnumResourceLanguages( NULL, RT_STRING, MAKEINTRESOURCE(IDS_LANGUAGE_NAME / 16 + 1),
             (ENUMRESLANGPROC) FillLangListProc, (LONG_PTR) &langData );
@@ -337,6 +347,12 @@ LanguageSettingsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 
         /* Clear language id data for the selected item */
         ComboBox_SetItemData(langData.languages, ComboBox_GetCurSel(langData.languages), 0);
+
+        /* Center the propery sheet */
+        ClipOrCenterWindowToMonitor(GetParent(hwndDlg), MONITOR_CENTER | MONITOR_WORKAREA);
+
+        /* Set the global window handle for the settings dialog */
+        o.hwndSettings = GetParent(hwndDlg);
 
         break;
 

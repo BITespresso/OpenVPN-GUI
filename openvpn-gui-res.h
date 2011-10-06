@@ -63,15 +63,23 @@
 
 /* Proxy Settings Dialog */
 #define ID_DLG_PROXY                     200
-#define ID_RB_PROXY_OPENVPN              210
-#define ID_RB_PROXY_MSIE                 211
-#define ID_RB_PROXY_MANUAL               212
-#define ID_RB_PROXY_HTTP                 213
-#define ID_RB_PROXY_SOCKS                219
-#define ID_EDT_PROXY_ADDRESS             214
-#define ID_EDT_PROXY_PORT                215
-#define ID_TXT_PROXY_ADDRESS             216
-#define ID_TXT_PROXY_PORT                217
+#define ID_RB_PROXY_OPENVPN              201
+#define ID_RB_PROXY_MSIE                 202
+#define ID_RB_PROXY_MANUAL               203
+#define ID_RB_PROXY_HTTP                 204
+#define ID_RB_PROXY_SOCKS                205
+#define ID_EDT_PROXY_HTTP_ADDRESS        206
+#define ID_EDT_PROXY_HTTP_PORT           207
+#define ID_EDT_PROXY_SOCKS_ADDRESS       208
+#define ID_EDT_PROXY_SOCKS_PORT          209
+#define ID_TXT_PROXY_HTTP_ADDRESS        210
+#define ID_TXT_PROXY_HTTP_PORT           211
+#define ID_TXT_PROXY_SOCKS_ADDRESS       212
+#define ID_TXT_PROXY_SOCKS_PORT          213
+#define ID_EDT_PROXY_ADDRESS             214 // delete
+#define ID_EDT_PROXY_PORT                215 // delete
+#define ID_TXT_PROXY_ADDRESS             216 // delete
+#define ID_TXT_PROXY_PORT                217 // delete
 
 /* General Settings Dialog */
 #define ID_DLG_GENERAL                   230

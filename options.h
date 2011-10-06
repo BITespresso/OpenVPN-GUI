@@ -142,6 +142,10 @@ typedef struct {
     TCHAR disconnectscript_timeout_string[4];
     TCHAR preconnectscript_timeout_string[4];
 
+    /* Window handles */
+    HWND hwndAbout;
+    HWND hwndSettings;
+
 #ifdef DEBUG
     FILE *debug_fp;
 #endif

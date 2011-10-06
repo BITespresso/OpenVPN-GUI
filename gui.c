@@ -19,7 +19,7 @@
  *  59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#define _WIN32_IE 0x0500
+#define WINVER 0x0500
 
 #include <windows.h>
 #include <windowsx.h>
@@ -473,8 +473,8 @@ void ReplaceFontTypeface(LPBYTE *ppbDest, LPBYTE *ppbSrc)
 
 void RemoveSysMenu(HWND hwndDlg)
 {
-    SendMessage(hwndDlg, WM_SETICON, (WPARAM) (ICON_BIG), NULL);
-    SendMessage(hwndDlg, WM_SETICON, (WPARAM) (ICON_SMALL), NULL);
+    SendMessage(hwndDlg, WM_SETICON, (WPARAM) (ICON_BIG), (LPARAM) NULL);
+    SendMessage(hwndDlg, WM_SETICON, (WPARAM) (ICON_SMALL), (LPARAM) NULL);
 
     return;
 }
@@ -482,7 +482,7 @@ void RemoveSysMenu(HWND hwndDlg)
 BOOL GetControlRect(const HWND hWnd, LPRECT lpRect)
 {
     HWND hWndParent = GetParent(hWnd);
-    POINT p = {0};
+    POINT p = {0, 0};
 
     // Get upper left position of the control within the window
     MapWindowPoints(hWnd, hWndParent, &p, 1);
@@ -501,4 +501,53 @@ BOOL GetControlRect(const HWND hWnd, LPRECT lpRect)
     }
 
     return FALSE;
+}
+
+void ClipOrCenterRectToMonitor(const LPRECT prc, const UINT flags)
+{
+    HMONITOR hMonitor;
+    MONITORINFO mi;
+    RECT rc;
+    int w = prc->right - prc->left;
+    int h = prc->bottom - prc->top;
+
+    // Get the nearest monitor to the passed rect
+    hMonitor = MonitorFromRect(prc, MONITOR_DEFAULTTONEAREST);
+
+    // Get the work area or entire monitor rect
+    mi.cbSize = sizeof(mi);
+    GetMonitorInfo(hMonitor, &mi);
+
+    if (flags & MONITOR_WORKAREA)
+    {
+        rc = mi.rcWork;
+    }
+    else
+    {
+        rc = mi.rcMonitor;
+    }
+
+    // Center or clip the passed rect to the monitor rect
+    if (flags & MONITOR_CENTER)
+    {
+        prc->left = rc.left + (rc.right - rc.left - w) / 2;
+        prc->top = rc.top + (rc.bottom - rc.top - h) / 2;
+        prc->right = prc->left + w;
+        prc->bottom = prc->top + h;
+    }
+    else
+    {
+        prc->left = max(rc.left, min(rc.right - w, prc->left));
+        prc->top = max(rc.top, min(rc.bottom - h, prc->top));
+        prc->right = prc->left + w;
+        prc->bottom = prc->top + h;
+    }
+}
+
+void ClipOrCenterWindowToMonitor(const HWND hwnd, const UINT flags)
+{
+    RECT rc;
+    GetWindowRect(hwnd, &rc);
+    ClipOrCenterRectToMonitor(&rc, flags);
+    SetWindowPos(hwnd, NULL, rc.left, rc.top, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
 }
