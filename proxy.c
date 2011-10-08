@@ -37,6 +37,7 @@
 #include "localization.h"
 #include "manage.h"
 #include "openvpn.h"
+#include "gui.h"
 
 extern options_t o;
 
@@ -393,19 +394,22 @@ ProxyAuthDialogFunc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
     UINT username_len;
     int length;
 
+    c = (connection_t *) GetProp(hwndDlg, cfgProp);
+
     switch (msg)
     {
     case WM_INITDIALOG:
         /* Set connection for this dialog */
         SetProp(hwndDlg, cfgProp, (HANDLE) lParam);
+
         SetForegroundWindow(hwndDlg);
+        RemoveSysMenu(hwndDlg);
         break;
 
     case WM_COMMAND:
         switch (LOWORD(wParam))
         {
         case IDOK:
-            c = (connection_t *) GetProp(hwndDlg, cfgProp);
             username_len = GetDlgItemText(hwndDlg, ID_EDT_PROXY_USER, buf, _tsizeof(buf));
             if (username_len == 0)
                 return TRUE;

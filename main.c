@@ -567,7 +567,7 @@ void CloseApplication(HWND hwnd)
 
   if (o.service_state == service_connected)
     {
-      if (MessageBox(NULL, LoadLocalizedString(IDS_NFO_SERVICE_ACTIVE_EXIT), _T("Exit OpenVPN"), MB_YESNO) == IDNO)
+      if (MessageBox(NULL, LoadLocalizedString(IDS_NFO_SERVICE_ACTIVE_EXIT), _T(PACKAGE_NAME), MB_OKCANCEL | MB_ICONWARNING | MB_SETFOREGROUND) == IDCANCEL)
         {
           return;
         }
@@ -581,7 +581,7 @@ void CloseApplication(HWND hwnd)
   }
   if (ask_exit) {
     /* aks for confirmation */
-    if (MessageBox(NULL, LoadLocalizedString(IDS_NFO_ACTIVE_CONN_EXIT), _T("Exit OpenVPN"), MB_YESNO) == IDNO)
+    if (MessageBox(NULL, LoadLocalizedString(IDS_NFO_ACTIVE_CONN_EXIT), _T(PACKAGE_NAME), MB_OKCANCEL | MB_ICONWARNING | MB_SETFOREGROUND) == IDCANCEL)
       {
         return;
       }
